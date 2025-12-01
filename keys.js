@@ -1,5 +1,6 @@
-module.exports = {
-    mongoUrl: "mongodb+srv://expensemyyogi:8957941422@cluster0.xricibd.mongodb.net/?retryWrites=true&w=majority",
-    Jwt_secret: "faslkfocvneofu"
+require("dotenv").config();
 
+module.exports = {
+    mongoUrl: process.env.MONGO_URL,
+    Jwt_secret: process.env.JWT_SECRET
 };
