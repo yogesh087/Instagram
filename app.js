@@ -3,7 +3,7 @@ const express = require('express');
 const app = express();
 const port = process.env.PORT || 5000;
 const mongoose = require("mongoose");
-const { mongoUrl } = require("./keys");
+const { mongoUrl, sessionSecret } = require("./keys");
 const cors = require("cors");
 const path = require("path");
 const passport = require("passport");
@@ -16,7 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Session config (required if using passport session based login)
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'your_session_secret_key',
+    secret: sessionSecret || 'your_session_secret_key',
     resave: false,
     saveUninitialized: false,
     cookie: {
