@@ -3,10 +3,11 @@ import logo from "../img/logo.png";
 import "./Navbar.css";
 import { Link } from "react-router-dom";
 import { LoginContext } from "../context/LoginContext";
-
+import { ThemeContext } from "../context/ThemeContext";
 
 export default function Navbar({ login }) {
   const { setModalOpen } = useContext(LoginContext);
+   const { theme, toggleTheme } = useContext(ThemeContext);
   const loginStatus = () => {
     const token = localStorage.getItem("jwt");
     if (login || token) {
@@ -43,6 +44,9 @@ export default function Navbar({ login }) {
   return (
     <div className="navbar">
       <img src={logo} alt="" />
+         <button onClick={toggleTheme} className="theme-btn">
+        {theme === "light" ? "🌙 Dark" : "☀️ Light"}
+      </button>
       <ul className="nav-menu">{loginStatus()}</ul>
     </div>
   );

@@ -16,13 +16,18 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true
+        // Make password optional for OAuth users
     },
     Photo: {
         type: String,
     },
+    googleId: {
+        type: String,
+        unique: true,
+        sparse: true // Allows null values
+    },
     followers: [{ type: ObjectId, ref: "USER" }],
     following: [{ type: ObjectId, ref: "USER" }]
-})
+});
 
 mongoose.model("USER", userSchema)

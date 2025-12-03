@@ -4,6 +4,7 @@ import logo from "../img/logo.png";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
 import { LoginContext } from "../context/LoginContext";
+import GoogleLogin from "./glogin"; // Import GoogleLogin component
 
 export default function SignIn() {
   const { setUserLogin } = useContext(LoginContext)
@@ -56,6 +57,14 @@ export default function SignIn() {
       <div>
         <div className="loginForm">
           <img className="signUpLogo" src={logo} alt="" />
+          
+          {/* Add Google Login Button */}
+          <GoogleLogin />
+          
+          <div className="divider">
+            <span>OR</span>
+          </div>
+          
           <div>
             <input type="email" name="email" id="email" value={email} placeholder="Email" onChange={(e) => { setEmail(e.target.value) }} />
           </div>

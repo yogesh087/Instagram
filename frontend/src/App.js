@@ -14,14 +14,22 @@ import { LoginContext } from "./context/LoginContext";
 import Modal from "./components/Modal";
 import UserProfie from "./components/UserProfile";
 import MyFolliwngPost from "./components/MyFollowingPost";
-
+// import OAuthSuccess from "./components/AAuthsuccess";
+import { ThemeContext } from "./context/ThemeContext";
 function App() {
   const [userLogin, setUserLogin] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [theme, setTheme] = useState("light");
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+  };
+
   return (
     <BrowserRouter>
-      <div className="App">
+       <div className={`App ${theme}`}>
         <LoginContext.Provider value={{ setUserLogin, setModalOpen }}>
+          <ThemeContext.Provider value={{ theme, toggleTheme }}> 
           <Navbar login={userLogin} />
           <Routes>
             <Route path="/" element={<Home />}></Route>
@@ -35,6 +43,7 @@ function App() {
           <ToastContainer theme="dark" />
 
           {modalOpen && <Modal setModalOpen={setModalOpen}></Modal>}
+          </ThemeContext.Provider>
         </LoginContext.Provider>
       </div>
     </BrowserRouter>

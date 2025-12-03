@@ -7,6 +7,28 @@
 
 }
 
+/* Light Theme */
+.App.light {
+  background-color: #ffffff;
+  color: #000;
+   text-align: center;
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* Dark Theme */
+.App.dark {
+  background-color: #121212;
+  color: #fff;
+   text-align: center;
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+}
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;
