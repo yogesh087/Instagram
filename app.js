@@ -9,20 +9,14 @@ const path = require("path");
 const passport = require("passport");
 const session = require("express-session");
 
-
-
 // Middleware
-app.use(cors({
-    origin: 'http://localhost:3000',
-    credentials: true
-}));
-
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Session configuration
+// Session config (required if using passport session based login)
 app.use(session({
-    secret: 'your_session_secret_key',
+    secret: process.env.SESSION_SECRET || 'your_session_secret_key',
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -30,11 +24,23 @@ app.use(session({
     }
 }));
 
-// Initialize Passport
+// Initialize passport
 app.use(passport.initialize());
 app.use(passport.session());
 
-// MongoDB connection
+// Models
+require('./models/model');
+require('./models/post');
+
+// Passport config
+require("./passport");
+
+// Routes
+app.use(require("./routes/auth"));   // Google login also comes from here now!
+app.use(require("./routes/createPost"));
+app.use(require("./routes/user"));
+
+// Database Connection
 mongoose.connect(mongoUrl);
 mongoose.connection.on("connected", () => {
     console.log("Successfully connected to MongoDB");
@@ -43,59 +49,7 @@ mongoose.connection.on("error", (err) => {
     console.log("Not connected to MongoDB:", err);
 });
 
-// Import routes
-require('./models/model');
-require('./models/post');
-// Passport config
-require("./passport");
-app.use(require("./routes/auth"));
-app.use(require("./routes/createPost"));
-app.use(require("./routes/user"));
-
-// Google OAuth routes
-app.get('/auth/google',
-    passport.authenticate('google', {
-        scope: ['profile', 'email'],
-        prompt: 'select_account'
-    })
-);
-
-app.get(
-  '/auth/google/callback',
-  passport.authenticate('google', {
-    failureRedirect: '/signin',
-    session: false,
-  }),
-  (req, res) => {
-    const jwt = require("jsonwebtoken");
-    const { Jwt_secret } = require("./keys");
-
-    const token = jwt.sign({ _id: req.user.id }, Jwt_secret);
-    const { _id, name, email, userName, Photo } = req.user;
-
-    // RESPONSE TO POPUP (NO REDIRECT TO FRONTEND)
-    res.send(`
-      <html>
-        <body>
-          <script>
-            window.opener.postMessage(
-              {
-                type: "GOOGLE_OAUTH_SUCCESS",
-                token: "${token}",
-                user: ${JSON.stringify({ _id, name, email, userName, Photo })}
-              },
-              "http://localhost:3000"
-            );
-            window.close();
-          </script>
-        </body>
-      </html>
-    `);
-  }
-);
-
-
-// Serve frontend
+// Serve frontend (build folder)
 app.use(express.static(path.join(__dirname, "./frontend/build")));
 app.get("*", (req, res) => {
     res.sendFile(

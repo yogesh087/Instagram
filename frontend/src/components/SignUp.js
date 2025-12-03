@@ -2,9 +2,7 @@ import React, { useEffect, useState } from "react";
 import logo from "../img/logo.png";
 import "./SignUp.css";
 import { Link, useNavigate } from "react-router-dom";
-
 import { toast } from 'react-toastify';
-
 
 export default function SignUp() {
   const navigate = useNavigate()
@@ -13,7 +11,6 @@ export default function SignUp() {
   const [userName, setUserName] = useState("")
   const [password, setPassword] = useState("")
 
-  // Toast functions
   const notifyA = (msg) => toast.error(msg)
   const notifyB = (msg) => toast.success(msg)
 

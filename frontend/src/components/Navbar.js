@@ -44,9 +44,9 @@ export default function Navbar({ login }) {
   return (
     <div className="navbar">
       <img src={logo} alt="" />
-         <button onClick={toggleTheme} className="theme-btn">
+         {/* <button onClick={toggleTheme} className="theme-btn">
         {theme === "light" ? "🌙 Dark" : "☀️ Light"}
-      </button>
+      </button> */}
       <ul className="nav-menu">{loginStatus()}</ul>
     </div>
   );

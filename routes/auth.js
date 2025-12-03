@@ -3,68 +3,88 @@ const router = express.Router();
 const mongoose = require("mongoose");
 const USER = mongoose.model("USER");
 const bcrypt = require('bcrypt');
-const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken");
 const { Jwt_secret } = require("../keys");
-const requireLogin = require("../middlewares/requireLogin");
+const passport = require("passport"); // <-- Import Passport
 
-// router.get('/', (req, res) => {
-//     res.send("hello")
-// })
-
+// -------------------- Signup --------------------
 router.post("/signup", (req, res) => {
     const { name, userName, email, password } = req.body;
-    if (!name || !email || !userName || !password) {
-        return res.status(422).json({ error: "Please add all the fields" })
-    }
-    USER.findOne({ $or: [{ email: email }, { userName: userName }] }).then((savedUser) => {
-        if (savedUser) {
-            return res.status(422).json({ error: "User already exist with that email or userName" })
-        }
-        bcrypt.hash(password, 12).then((hashedPassword) => {
 
-            const user = new USER({
+    if (!name || !email || !userName || !password) {
+        return res.status(422).json({ error: "Please add all the fields" });
+    }
+
+    USER.findOne({ $or: [{ email }, { userName }] }).then(savedUser => {
+        if (savedUser) return res.status(422).json({ error: "User already exist" });
+
+        bcrypt.hash(password, 12).then(hashedPassword => {
+            const newUser = new USER({
                 name,
                 email,
                 userName,
                 password: hashedPassword
-            })
+            });
 
-            user.save()
-                .then(user => { res.json({ message: "Registered successfully" }) })
-                .catch(err => { console.log(err) })
-        })
-    })
+            newUser.save()
+                .then(() => res.json({ message: "Registered successfully" }))
+                .catch(err => console.log(err));
+        });
+    });
+});
 
-
-
-
-})
-
+// -------------------- Signin --------------------
 router.post("/signin", (req, res) => {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-        return res.status(422).json({ error: "Please add email and password" })
-    }
-    USER.findOne({ email: email }).then((savedUser) => {
-        if (!savedUser) {
-            return res.status(422).json({ error: "Invalid email" })
-        }
-        bcrypt.compare(password, savedUser.password).then((match) => {
-            if (match) {
-                // return res.status(200).json({ message: "Signed in Successfully" })
-                const token = jwt.sign({ _id: savedUser.id }, Jwt_secret)
-                const { _id, name, email, userName } = savedUser
+    if (!email || !password) return res.status(422).json({ error: "Please add email and password" });
 
-                res.json({ token, user: { _id, name, email, userName } })
+    USER.findOne({ email }).then(savedUser => {
+        if (!savedUser) return res.status(422).json({ error: "Invalid email" });
 
-                console.log({ token, user: { _id, name, email, userName } })
-            } else {
-                return res.status(422).json({ error: "Invalid password" })
-            }
-        })
-            .catch(err => console.log(err))
+        bcrypt.compare(password, savedUser.password).then(match => {
+            if (!match) return res.status(422).json({ error: "Invalid password" });
+
+            const token = jwt.sign({ _id: savedUser._id }, Jwt_secret);
+            const { _id, name, email, userName } = savedUser;
+            res.json({ token, user: { _id, name, email, userName } });
+        });
+    });
+});
+
+// -------------------- Google Auth Routes --------------------
+router.get("/auth/google",
+    passport.authenticate("google", {
+        scope: ["profile", "email"],
+        prompt: "select_account"
     })
-})
+);
+
+router.get("/auth/google/callback",
+    passport.authenticate("google", { failureRedirect: "/signin", session: false }),
+    (req, res) => {
+        const token = jwt.sign({ _id: req.user._id }, Jwt_secret);
+
+        const { _id, name, email, userName, Photo } = req.user;
+
+        res.send(`
+          <html>
+            <body>
+              <script>
+                window.opener.postMessage(
+                  {
+                    type: "GOOGLE_OAUTH_SUCCESS",
+                    token: "${token}",
+                    user: ${JSON.stringify({ _id, name, email, userName, Photo })}
+                  },
+                  "http://localhost:3000"
+                );
+                window.close();
+              </script>
+            </body>
+          </html>
+        `);
+    }
+);
 
 module.exports = router;
